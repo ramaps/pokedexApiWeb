@@ -16,6 +16,7 @@ class Pokedex {
                 document.getElementById('nextBtn').addEventListener('click', () => this.nextPokemon());
                 document.getElementById('randomBtn').addEventListener('click', () => this.loadRandomPokemon());
                 
+                // Cierre de modal (X)
                 document.getElementById('closeModal').addEventListener('click', () => this.closeQRScanner()); 
                 document.getElementById('retryCamera').addEventListener('click', () => this.openQRScanner());
                 document.getElementById('frontCamera').addEventListener('click', () => this.switchCamera('user'));
@@ -25,13 +26,14 @@ class Pokedex {
                     if (e.key === 'Enter') this.searchPokemon();
                 });
 
+                // Cierre haciendo clic en el fondo del modal (backdrop)
                 document.getElementById('qrModal').addEventListener('click', (e) => {
                     if (e.target === document.getElementById('qrModal')) {
                         this.closeQRScanner();
                     }
                 });
 
-                // Control de botón "Atrás" sin conflicto
+                // Control de botón "Atrás" sin conflicto de historial
                 window.addEventListener('popstate', (e) => {
                     if (this.isScanning) {
                         this.closeQRScanner(false); 
@@ -87,6 +89,7 @@ class Pokedex {
                     if (qrContainer) {
                         qrReader = document.createElement('div');
                         qrReader.id = 'qrReader';
+                        // Lo insertamos al principio del contenedor para mantener el orden de otros elementos (overlay, error)
                         qrContainer.prepend(qrReader); 
                     } else {
                         console.error("FALTA .scanner-container en index.html o estructura incorrecta.");
@@ -138,24 +141,43 @@ class Pokedex {
                 const maxId = this.maxPokemonId;
                 const trimmedText = decodedText.trim();
                 
+                console.log("QR escaneado (Texto original):", trimmedText); 
+                
+                // 1. Intenta parsear como número puro
                 pokemonId = parseInt(trimmedText);
 
+                // 2. Si es inválido, intenta extraer el último número (para URLs o texto con prefijos)
                 if (isNaN(pokemonId) || pokemonId < 1 || pokemonId > maxId) {
-                    const match = trimmedText.match(/(\d+)\/?$/);
+                    const match = trimmedText.match(/(\d+)\/?$/); // Busca el último grupo de dígitos
                     if (match && match[1]) {
                         pokemonId = parseInt(match[1]);
                     }
                 }
                 
+                // 3. Valida el resultado final
                 if (pokemonId >= 1 && pokemonId <= maxId) {
                     idFound = true;
                 }
 
                 if (idFound) {
+                    console.log("✅ ID de Pokémon válido encontrado. Cargando:", pokemonId); 
+                    
                     this.isScanning = false;
                     await this.closeQRScanner();
+                    
+                    // Muestra el ID en el campo de texto (confirmación visual)
+                    document.getElementById('pokemonInput').value = pokemonId; 
+                    
                     this.currentPokemonId = pokemonId;
                     this.loadPokemon(pokemonId);
+                } else {
+                    console.error(`❌ El QR no contiene un ID válido (1-${maxId}). Valor extraído:`, pokemonId); 
+                    await this.closeQRScanner();
+                    
+                    // Si falla, borra el input y muestra un error temporal
+                    document.getElementById('pokemonInput').value = '';
+                    this.showError(); // Muestra el mensaje de error de la Pokédex principal
+                    setTimeout(() => this.hideError(), 3000); 
                 }
             }
             
@@ -172,10 +194,9 @@ class Pokedex {
                     // A. Detenemos el stream de video
                     if (this.qrScanner.isScanning()) {
                         try {
-                            // Parar es el paso más importante
                             await this.qrScanner.stop(); 
                         } catch (error) {
-                            console.error("Error al detener el stream de video, probablemente bloqueado por el navegador:", error);
+                            console.error("Error al detener el stream de video:", error);
                         }
                     }
                     
