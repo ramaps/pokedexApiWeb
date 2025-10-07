@@ -90,11 +90,11 @@ body {
     transform: translateY(-2px);
 }
 
-/* --- ESTILOS DEL BOTÓN HISTORIAL (NUEVO) --- */
+/* --- ESTILOS DEL BOTÓN HISTORIAL --- */
 #historyBtn {
-    background: #ffffff; 
-    color: #333333; 
-    border: 2px solid #2a75bb; 
+    background: #ffffff;
+    color: #333333;
+    border: 2px solid #2a75bb;
 }
 
 #historyBtn:hover {
@@ -561,10 +561,10 @@ body {
     line-height: 1.5;
 }
 
-/* --- ESTILOS ESPECÍFICOS DEL HISTORIAL --- */
+/* --- ESTILOS ESPECÍFICOS DEL HISTORIAL (Con miniaturas) --- */
 
 .history-content {
-    background: linear-gradient(135deg, #1c5a9c, #2a75bb); 
+    background: linear-gradient(135deg, #1c5a9c, #2a75bb);
     max-width: 500px;
 }
 
@@ -577,7 +577,7 @@ body {
 
 .control-btn {
     /* Estilo base para Exportar/Importar */
-    background: #00cc66; 
+    background: #00cc66;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -595,7 +595,7 @@ body {
 
 .history-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); /* Aumentado a 75px para la miniatura */
     gap: 5px;
     padding: 10px 20px 20px 20px;
     max-height: 400px;
@@ -608,9 +608,31 @@ body {
     font-family: 'Press Start 2P', cursive;
     font-size: 8px;
     text-align: center;
-    padding: 8px 0;
+    padding: 5px 0; /* Ajuste de padding */
     border-radius: 5px;
     transition: all 0.1s;
+    /* Configuración para centrar sprite y texto */
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 75px; /* Altura mínima para el sprite */
+    box-shadow: 2px 2px 0 #00000033;
+}
+
+/* NUEVO: Estilo para la imagen del historial (Miniatura Pixelada) */
+.history-item .history-sprite {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    margin-bottom: 3px;
+    /* Propiedades para asegurar el efecto Pixel Art */
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    border: 1px solid #00000033; 
+    border-radius: 3px;
+    background: #ffffff99;
 }
 
 .unscanned {
@@ -618,11 +640,12 @@ body {
     color: #666666;
     border: 1px solid #222;
     cursor: default;
+    min-height: 40px; /* Más pequeño al no tener sprite */
 }
 
 .scanned {
     /* Pokémon ya capturado */
-    background: #ffcc00; 
+    background: #ffcc00;
     color: #333333;
     border: 1px solid #e6b800;
     cursor: pointer;
@@ -660,65 +683,78 @@ body {
     image-rendering: crisp-edges;
 }
 
-/* Responsive */
+/* --- MEDIA QUERIES (RESPONSIVE) --- */
 @media (max-width: 768px) {
     .container {
         padding: 10px;
     }
-    
+
     .header h1 {
         font-size: 1.4em;
     }
-    
+
     .pokedex {
         padding: 15px;
     }
-    
+
     .screen-container {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-    
+
     .pokemon-image {
         min-height: 200px;
         padding: 20px;
     }
-    
+
     #pokemonSprite {
         width: 140px;
         height: 140px;
     }
-    
+
     .search-buttons-row {
         flex-direction: column;
         align-items: center;
     }
-    
+
     #searchBtn, #qrBtn, #prevBtn, #nextBtn, #randomBtn, #historyBtn {
         width: 180px;
     }
-    
+
     .modal-content {
         margin: 10% auto;
         width: 95%;
     }
-    
+
     .scanner-overlay {
         width: 180px;
         height: 180px;
     }
-    
+
     .modal-header h2 {
         font-size: 12px;
     }
-    
+
     /* Responsive específico del historial */
     .history-grid {
-        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+        /* Se reduce el tamaño mínimo para caber más en pantallas pequeñas */
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); 
     }
+    
     .history-item {
         font-size: 6px;
+        min-height: 60px; /* Ajuste para el nuevo tamaño de celda */
     }
+
+    .history-item .history-sprite {
+        width: 35px; /* Sprites más pequeños */
+        height: 35px;
+    }
+
+    .unscanned {
+        min-height: 30px; /* Ajuste para el nuevo tamaño de celda sin sprite */
+    }
+    
     .history-controls {
         flex-direction: column;
         align-items: center;

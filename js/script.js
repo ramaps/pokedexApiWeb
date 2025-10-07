@@ -123,7 +123,7 @@ class Pokedex {
         } 
     }
 
-    /** Dibuja la cuadrícula completa de Pokémon (escaneados vs. no escaneados). */
+    /** Dibuja la cuadrícula completa de Pokémon (escaneados vs. no escaneados) CON MINITURAS. */
     displayHistory() {
         const grid = document.getElementById('historyGrid');
         if (!grid) return;
@@ -135,16 +135,36 @@ class Pokedex {
             const isScanned = !!this.scannedHistory[String(i)]; 
             
             const div = document.createElement('div');
+            // Clase base para todos
             div.className = `history-item ${isScanned ? 'scanned' : 'unscanned'}`;
-            div.textContent = `#${number}`;
             div.dataset.pokemonId = i;
             
             if (isScanned) {
+                // 1. Crear el elemento de la imagen (Miniatura)
+                const img = document.createElement('img');
+                // Usamos el sprite frontal estático básico
+                img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${i}.png`;
+                img.alt = `Pokémon #${i}`;
+                img.classList.add('history-sprite');
+                
+                // 2. Crear el elemento del número
+                const p = document.createElement('p');
+                p.textContent = `#${number}`;
+                p.classList.add('history-number');
+
+                // 3. Añadir ambos elementos al div
+                div.appendChild(img);
+                div.appendChild(p);
+                
+                // 4. Añadir Listener para cargar el Pokémon al hacer clic
                 div.addEventListener('click', () => {
                     this.currentPokemonId = i;
                     this.loadPokemon(i);
                     document.getElementById('historyModal').style.display = 'none';
                 });
+            } else {
+                 // Para los no escaneados, solo mostramos el número
+                 div.textContent = `#${number}`; 
             }
             
             grid.appendChild(div);
