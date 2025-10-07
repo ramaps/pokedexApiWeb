@@ -954,26 +954,38 @@
                 }
             }
 
-            displayPokemon(pokemon) {
-                document.getElementById('pokemonName').textContent = this.capitalizeFirst(pokemon.name);
-                document.getElementById('pokemonId').textContent = `#${pokemon.id.toString().padStart(3, '0')}`;
-                
-                const sprite = document.getElementById('pokemonSprite');
-                const pixelSprite = pokemon.sprites.versions['generation-v']?.['black-white']?.animated?.front_default ||
-                                  pokemon.sprites.front_default;
-                
-                sprite.src = pixelSprite;
-                sprite.style.display = 'block';
-                
-                this.displayTypes(pokemon.types);
-                document.getElementById('pokemonHeight').textContent = `${(pokemon.height / 10).toFixed(1)} m`;
-                document.getElementById('pokemonWeight').textContent = `${(pokemon.weight / 10).toFixed(1)} kg`;
-                
-                this.displayAbilities(pokemon.abilities);
-                this.displayStats(pokemon.stats);
-                
-                this.hideLoading();
+displayPokemon(pokemon) {
+    document.getElementById('pokemonName').textContent = this.capitalizeFirst(pokemon.name);
+    document.getElementById('pokemonId').textContent = #${pokemon.id.toString().padStart(3, '0')};
+    
+    const sprite = document.getElementById('pokemonSprite');
+    
+    // VERSIÓN CORREGIDA - Sin operador ?.
+    let pixelSprite = pokemon.sprites.front_default;
+    
+    // Verificación segura de sprites pixelados
+    if (pokemon.sprites.versions) {
+        const gen5 = pokemon.sprites.versions['generation-v'];
+        if (gen5) {
+            const blackWhite = gen5['black-white'];
+            if (blackWhite && blackWhite.animated && blackWhite.animated.front_default) {
+                pixelSprite = blackWhite.animated.front_default;
             }
+        }
+    }
+    
+    sprite.src = pixelSprite;
+    sprite.style.display = 'block';
+    
+    this.displayTypes(pokemon.types);
+    document.getElementById('pokemonHeight').textContent = ${(pokemon.height / 10).toFixed(1)} m;
+    document.getElementById('pokemonWeight').textContent = ${(pokemon.weight / 10).toFixed(1)} kg;
+    
+    this.displayAbilities(pokemon.abilities);
+    this.displayStats(pokemon.stats);
+    
+    this.hideLoading();
+}
 
             displayTypes(types) {
                 const typesContainer = document.getElementById('pokemonTypes');
