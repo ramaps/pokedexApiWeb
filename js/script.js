@@ -5,17 +5,31 @@ class Pokedex {
                 this.qrScanner = null;
                 this.isScanning = false;
                 this.currentCamera = "environment"; 
-                this.cameraLocked = false; // <-- NUEVA BANDERA DE CONTROL DE ERRORES
+                this.cameraLocked = false; 
+
+                this.HISTORY_STORAGE_KEY = 'pokedex_scanned_history';
+                this.scannedHistory = this.loadHistory(); 
+                
                 this.initializeEventListeners();
                 this.loadPokemon(this.currentPokemonId);
             }
 
             initializeEventListeners() {
+                // ... (Event Listeners existentes) ...
                 document.getElementById('searchBtn').addEventListener('click', () => this.searchPokemon());
                 document.getElementById('qrBtn').addEventListener('click', () => this.openQRScanner());
                 document.getElementById('prevBtn').addEventListener('click', () => this.previousPokemon());
                 document.getElementById('nextBtn').addEventListener('click', () => this.nextPokemon());
                 document.getElementById('randomBtn').addEventListener('click', () => this.loadRandomPokemon());
+                
+                // Listeners de Historial
+                document.getElementById('historyBtn').addEventListener('click', () => this.openHistoryScreen());
+                document.getElementById('closeHistoryModal').addEventListener('click', () => document.getElementById('historyModal').style.display = 'none');
+                
+                // *** NUEVOS LISTENERS PARA IMPORTAR/EXPORTAR ***
+                document.getElementById('exportHistoryBtn').addEventListener('click', () => this.exportHistoryToTxt());
+                document.getElementById('importFile').addEventListener('change', (e) => this.importHistoryFromTxt(e.target.files[0]));
+                // ... (Resto de Listeners de la cámara) ...
                 
                 document.getElementById('closeModal').addEventListener('click', () => this.closeQRScanner()); 
                 document.getElementById('retryCamera').addEventListener('click', () => this.openQRScanner());
@@ -38,6 +52,139 @@ class Pokedex {
                     }
                 });
             }
+            
+            // --- NUEVAS FUNCIONES DE EXPORTAR / IMPORTAR TXT ---
+
+            exportHistoryToTxt() {
+                // Convierte las claves del historial (los IDs) a una lista separada por comas
+                const historyIds = Object.keys(this.scannedHistory).join(',');
+                
+                if (!historyIds) {
+                    alert('No hay Pokémon escaneados para exportar.');
+                    return;
+                }
+                
+                // Crea un objeto Blob (similar a un archivo)
+                const blob = new Blob([historyIds], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+
+                // Crea un enlace temporal para forzar la descarga
+                const a = document.createElement('a');
+                a.href = url;
+                // El navegador le preguntará al usuario dónde guardar este archivo
+                a.download = `pokedex_history_${new Date().toISOString().slice(0, 10)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                alert('Historial exportado con éxito. ¡Busca el archivo en tu carpeta de descargas!');
+            }
+
+            importHistoryFromTxt(file) {
+                if (!file) {
+                    alert('Por favor, selecciona un archivo .txt de historial.');
+                    return;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    try {
+                        const content = e.target.result;
+                        // Espera una lista de números separados por comas
+                        const ids = content.split(',')
+                                           .map(id => parseInt(id.trim()))
+                                           .filter(id => !isNaN(id) && id >= 1 && id <= this.maxPokemonId);
+                        
+                        if (ids.length === 0) {
+                            alert('El archivo no contiene IDs de Pokémon válidos.');
+                            return;
+                        }
+
+                        // Fusiona el historial existente con el nuevo
+                        ids.forEach(id => {
+                            this.scannedHistory[String(id)] = true;
+                        });
+
+                        this.saveHistory();
+                        this.displayHistory();
+                        
+                        alert(`Historial importado y fusionado con éxito. ${ids.length} Pokémon encontrados.`);
+
+                    } catch (error) {
+                        console.error('Error al leer el archivo de historial:', error);
+                        alert('Hubo un error al procesar el archivo. Asegúrate de que es un .txt válido.');
+                    }
+                };
+
+                // Inicia la lectura del archivo seleccionado
+                reader.readAsText(file);
+                
+                // Limpia el input para que pueda volver a importar el mismo archivo
+                document.getElementById('importFile').value = null; 
+            }
+
+            // --- Funciones de Historial Local (JSON) ---
+
+            loadHistory() {
+                try {
+                    const historyJson = localStorage.getItem(this.HISTORY_STORAGE_KEY);
+                    return historyJson ? JSON.parse(historyJson) : {}; 
+                } catch (e) {
+                    console.error("Error al cargar el historial:", e);
+                    return {};
+                }
+            }
+
+            saveHistory() {
+                try {
+                    localStorage.setItem(this.HISTORY_STORAGE_KEY, JSON.stringify(this.scannedHistory));
+                } catch (e) {
+                    console.error("Error al guardar el historial:", e);
+                }
+            }
+
+            addPokemonToHistory(id) {
+                const idString = String(id);
+                if (!this.scannedHistory[idString]) {
+                    this.scannedHistory[idString] = true;
+                    this.saveHistory();
+                    console.log(`Guardado Pokémon #${idString} en el historial.`);
+                }
+            }
+
+            openHistoryScreen() {
+                document.getElementById('historyModal').style.display = 'block';
+                this.displayHistory();
+            }
+
+            displayHistory() {
+                const grid = document.getElementById('historyGrid');
+                grid.innerHTML = ''; 
+                
+                for (let i = 1; i <= this.maxPokemonId; i++) {
+                    const number = i.toString().padStart(3, '0');
+                    const isScanned = !!this.scannedHistory[String(i)]; 
+                    
+                    const div = document.createElement('div');
+                    div.className = `history-item ${isScanned ? 'scanned' : 'unscanned'}`;
+                    div.textContent = `#${number}`;
+                    div.dataset.pokemonId = i;
+                    
+                    if (isScanned) {
+                        div.addEventListener('click', () => {
+                            this.currentPokemonId = i;
+                            this.loadPokemon(i);
+                            document.getElementById('historyModal').style.display = 'none';
+                        });
+                    }
+                    
+                    grid.appendChild(div);
+                }
+            }
+
+            // --- Funciones de la Pokédex (Resto) ---
 
             updateNavigationButtons() {
                 const prevBtn = document.getElementById('prevBtn');
@@ -62,7 +209,6 @@ class Pokedex {
                 const modal = document.getElementById('qrModal');
                 const cameraError = document.getElementById('cameraError');
                 
-                // 1. Detección de Bloqueo Persistente
                 if (this.cameraLocked) {
                     modal.style.display = 'block';
                     cameraError.innerHTML = `
@@ -71,11 +217,10 @@ class Pokedex {
                         <p>Por favor, **RECARGA LA PÁGINA** para liberar el bloqueo y volver a intentarlo.</p>
                     `;
                     cameraError.style.display = 'block';
-                    document.querySelector('.camera-options').style.display = 'none'; // Oculta botones si hay error fatal
+                    document.querySelector('.camera-options').style.display = 'none';
                     return;
                 }
                 
-                // Si la cámara no está bloqueada, limpiamos el mensaje de error anterior
                 cameraError.innerHTML = `
                     <h3>❌ ERROR DE CÁMARA</h3>
                     <p>No se pudo acceder a la cámara</p>
@@ -104,7 +249,6 @@ class Pokedex {
                     await this.closeQRScanner(false); 
                 }
 
-                // *** RECREACIÓN del elemento #qrReader ***
                 let qrReader = document.getElementById('qrReader');
                 if (!qrReader) {
                     const qrContainer = document.querySelector('.scanner-container'); 
@@ -141,18 +285,15 @@ class Pokedex {
                         (error) => {}
                     );
                     
-                    // Si el inicio fue exitoso, el bloqueo anterior se ha resuelto
                     this.cameraLocked = false; 
 
                 } catch (error) {
                     console.error("❌ Error al iniciar cámara:", error);
                     
-                    // Si falla el inicio, marcamos la bandera para el siguiente intento
                     this.cameraLocked = true;
                     this.showCameraError();
                     this.isScanning = false;
                     
-                    // Intento de recuperación forzada si el error fue por cámara por defecto
                     if (this.currentCamera === "environment") {
                         setTimeout(() => {
                             this.switchCamera('user');
@@ -189,6 +330,8 @@ class Pokedex {
                     
                     this.isScanning = false;
                     await this.closeQRScanner();
+                    
+                    this.addPokemonToHistory(pokemonId);
                     
                     document.getElementById('pokemonInput').value = pokemonId; 
                     
@@ -238,7 +381,6 @@ class Pokedex {
                     history.back(); 
                 }
                 
-                // DELAY EXTENDIDO (1 segundo)
                 await new Promise(resolve => setTimeout(resolve, 1000)); 
             }
             
@@ -246,7 +388,7 @@ class Pokedex {
                 document.getElementById('cameraError').style.display = 'block';
             }
 
-            // --- Funciones de la Pokédex (No modificadas) ---
+            // --- Funciones de la Pokédex (El resto permanece igual) ---
 
             async searchPokemon() {
                 const input = document.getElementById('pokemonInput').value.trim();
