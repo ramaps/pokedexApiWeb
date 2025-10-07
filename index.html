@@ -6,7 +6,7 @@
     <title>Pokédex Pixel Art</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
-        <style>
+    <style>
             * {
             margin: 0;
             padding: 0;
@@ -809,34 +809,37 @@
             }
 
             async openQRScanner() {
-                const modal = document.getElementById('qrModal');
-                const cameraError = document.getElementById('cameraError');
-                
-                modal.style.display = 'block';
-                cameraError.style.display = 'none';
-                
-                // Verificar si la librería está cargada
-                if (typeof Html5Qrcode === 'undefined') {
-                    console.error('❌ Librería QR no cargada');
-                    this.showCameraError();
-                    return;
-                }
-                
-                // Limpiar escáner anterior si existe
-                if (this.qrScanner) {
-                    await this.closeQRScanner();
-                }
-                
-                try {
-                    this.isScanning = true;
-                    
-                    this.qrScanner = new Html5Qrcode("qrReader");
-                    
-                    const config = {
-                        fps: 10,
-                        qrbox: { width: 200, height: 200 }
-                    };
-
+    const modal = document.getElementById('qrModal');
+    modal.style.display = 'block';
+    
+    try {
+        // Usar la API nativa de cámara
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment" } 
+        });
+        
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.setAttribute("playsinline", true);
+        video.style.width = "100%";
+        video.style.borderRadius = "10px";
+        
+        const scannerContainer = document.getElementById('qrReader');
+        scannerContainer.innerHTML = '';
+        scannerContainer.appendChild(video);
+        
+        await video.play();
+        
+        // Mensaje instructivo
+        const instructions = document.createElement('div');
+        instructions.innerHTML = '<p style="color: white; text-align: center; font-family: Press Start 2P; font-size: 8px;">📷 Cámara activada - Usa app externa para QR</p>';
+        scannerContainer.appendChild(instructions);
+        
+    } catch (error) {
+        console.error("Error cámara:", error);
+        this.showCameraError();
+    }
+}
                     console.log("📷 Intentando iniciar cámara:", this.currentCamera);
                     
                     await this.qrScanner.start(
