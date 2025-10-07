@@ -365,23 +365,24 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            background-color: rgba(0, 0, 0, 0.95);
         }
 
         .modal-content {
             background: linear-gradient(135deg, #2a75bb, #1c5a9c);
             margin: 5% auto;
             padding: 0;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 450px;
-            border: 4px solid #ffcc00;
+            border-radius: 20px;
+            width: 95%;
+            max-width: 400px;
+            border: 5px solid #ffcc00;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.5);
         }
 
         .modal-header {
             background: #ffcc00;
-            padding: 15px;
-            border-radius: 12px 12px 0 0;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -390,7 +391,7 @@
         .modal-header h2 {
             font-family: 'Press Start 2P', cursive;
             color: #2a75bb;
-            font-size: 12px;
+            font-size: 14px;
             margin: 0;
         }
 
@@ -399,30 +400,37 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            font-size: 18px;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
             cursor: pointer;
             font-family: 'Press Start 2P', cursive;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: #b30720;
+            transform: scale(1.1);
         }
 
         .camera-options {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             justify-content: center;
-            margin: 12px 0;
-            padding: 0 15px;
+            margin: 15px 0;
+            padding: 0 20px;
         }
 
         .camera-option-btn {
             background: #ffcc00;
             color: #2a75bb;
             border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 10px 15px;
+            border-radius: 10px;
             cursor: pointer;
             font-family: 'Press Start 2P', cursive;
-            font-size: 7px;
+            font-size: 8px;
+            transition: all 0.3s;
         }
 
         .camera-option-btn.active {
@@ -430,11 +438,15 @@
             color: white;
         }
 
+        .camera-option-btn:hover {
+            transform: translateY(-2px);
+        }
+
         .scanner-container {
             position: relative;
-            padding: 15px;
+            padding: 20px;
             background: #000;
-            min-height: 250px;
+            min-height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -442,49 +454,106 @@
 
         #qrReader {
             width: 100%;
-            max-width: 250px;
-            border-radius: 8px;
+            max-width: 280px;
+            border-radius: 10px;
             overflow: hidden;
+        }
+
+        .scanner-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 3px solid #ffcc00;
+            border-radius: 15px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .scanner-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: #ff0000;
+            top: 20%;
+            animation: scanLine 2s ease-in-out infinite;
+        }
+
+        @keyframes scanLine {
+            0%, 100% { top: 20%; opacity: 1; }
+            50% { top: 80%; opacity: 0.7; }
         }
 
         .camera-error {
             text-align: center;
             color: white;
-            padding: 15px;
+            padding: 20px;
+            display: none;
         }
 
         .camera-error h3 {
             font-family: 'Press Start 2P', cursive;
-            font-size: 10px;
-            margin-bottom: 10px;
+            font-size: 12px;
+            margin-bottom: 15px;
             color: #ffcc00;
+        }
+
+        .camera-error p {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            margin: 8px 0;
+            line-height: 1.5;
         }
 
         .retry-btn {
             background: #28a745;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 20px;
             cursor: pointer;
             font-family: 'Press Start 2P', cursive;
             font-size: 9px;
-            margin-top: 10px;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+
+        .retry-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .permission-help {
+            background: rgba(255, 204, 0, 0.2);
+            padding: 15px;
+            margin: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .permission-help p {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            color: #ffcc00;
+            margin: 5px 0;
+            line-height: 1.4;
         }
 
         .modal-instructions {
             padding: 15px;
             text-align: center;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 0 0 12px 12px;
+            border-radius: 0 0 15px 15px;
         }
 
         .modal-instructions p {
             color: white;
             font-family: 'Press Start 2P', cursive;
-            font-size: 7px;
+            font-size: 8px;
             margin: 8px 0;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         /* Colores para tipos Pokémon */
@@ -549,6 +618,15 @@
                 margin: 10% auto;
                 width: 95%;
             }
+            
+            .scanner-overlay {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .modal-header h2 {
+                font-size: 12px;
+            }
         }
 
         .pixel-art {
@@ -589,15 +667,27 @@
                 
                 <div class="scanner-container">
                     <div id="qrReader"></div>
-                    <div id="cameraError" class="camera-error" style="display: none;">
-                        <h3>ERROR DE CÁMARA</h3>
+                    <div class="scanner-overlay">
+                        <div class="scanner-line"></div>
+                    </div>
+                    <div id="cameraError" class="camera-error">
+                        <h3>❌ ERROR DE CÁMARA</h3>
                         <p>No se pudo acceder a la cámara</p>
+                        <p>1. Haz clic en el ícono de 🔒 o 📷</p>
+                        <p>2. Selecciona "Permitir"</p>
+                        <p>3. Recarga la página si es necesario</p>
                         <button id="retryCamera" class="retry-btn">REINTENTAR</button>
                     </div>
                 </div>
+                
+                <div class="permission-help">
+                    <p>💡 Busca el ícono de cámara en la barra de direcciones</p>
+                    <p>📱 En móvil: Toca "Permitir" cuando aparezca</p>
+                </div>
+                
                 <div class="modal-instructions">
-                    <p>💡 Permite el acceso a la cámara</p>
-                    <p>📱 Escanea QR con números 1-1025</p>
+                    <p>🎯 Apunta al código QR</p>
+                    <p>🔢 Debe contener números del 1 al 1025</p>
                 </div>
             </div>
         </div>
@@ -725,12 +815,21 @@
                 modal.style.display = 'block';
                 cameraError.style.display = 'none';
                 
+                // Verificar si la librería está cargada
+                if (typeof Html5Qrcode === 'undefined') {
+                    console.error('❌ Librería QR no cargada');
+                    this.showCameraError();
+                    return;
+                }
+                
+                // Limpiar escáner anterior si existe
                 if (this.qrScanner) {
                     await this.closeQRScanner();
                 }
                 
                 try {
                     this.isScanning = true;
+                    
                     this.qrScanner = new Html5Qrcode("qrReader");
                     
                     const config = {
@@ -738,10 +837,11 @@
                         qrbox: { width: 200, height: 200 }
                     };
 
+                    console.log("📷 Intentando iniciar cámara:", this.currentCamera);
+                    
                     await this.qrScanner.start(
                         { 
-                            facingMode: this.currentCamera,
-                            aspectRatio: 1.0
+                            facingMode: this.currentCamera
                         },
                         config,
                         (decodedText) => {
@@ -752,10 +852,13 @@
                         }
                     );
                     
+                    console.log("✅ Escáner iniciado correctamente");
+                    
                 } catch (error) {
-                    console.error("Error al iniciar cámara:", error);
+                    console.error("❌ Error al iniciar cámara:", error);
                     this.showCameraError();
                     
+                    // Intentar con cámara frontal si falla la trasera
                     if (this.currentCamera === "environment") {
                         setTimeout(() => {
                             this.switchCamera('user');
@@ -768,6 +871,8 @@
             onQRScanSuccess(decodedText) {
                 if (!this.isScanning) return;
                 
+                console.log("✅ QR escaneado:", decodedText);
+                
                 const pokemonId = parseInt(decodedText.trim());
                 
                 if (!isNaN(pokemonId) && pokemonId >= 1 && pokemonId <= this.maxPokemonId) {
@@ -775,19 +880,24 @@
                     this.closeQRScanner();
                     this.currentPokemonId = pokemonId;
                     this.loadPokemon(pokemonId);
+                } else {
+                    console.log("❌ QR no válido");
                 }
             }
 
             async closeQRScanner() {
                 this.isScanning = false;
+                
                 if (this.qrScanner && this.qrScanner.isScanning) {
                     try {
                         await this.qrScanner.stop();
                         this.qrScanner.clear();
+                        console.log("🔴 Escáner detenido");
                     } catch (error) {
                         console.error("Error al detener escáner:", error);
                     }
                 }
+                
                 document.getElementById('qrModal').style.display = 'none';
             }
 
