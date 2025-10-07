@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokédex Pixel Art</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css"> 
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -16,6 +16,7 @@
                 <div class="search-buttons-row">
                     <button id="searchBtn">BUSCAR</button>
                     <button id="qrBtn">ESCANEAR QR</button>
+                    <button id="historyBtn">HISTORIAL</button> 
                     <button id="prevBtn">ANTERIOR</button>
                     <button id="nextBtn">SIGUIENTE</button>
                     <button id="randomBtn">ALEATORIO</button>
@@ -62,6 +63,26 @@
             </div>
         </div>
 
+        <div id="historyModal" class="modal">
+            <div class="modal-content history-content">
+                <div class="modal-header">
+                    <h2>POKÉMON ESCANEADOS</h2>
+                    <button id="closeHistoryModal" class="close-btn">&times;</button>
+                </div>
+
+                <div class="history-controls">
+                    <button id="exportHistoryBtn" class="control-btn">Exportar a .txt</button>
+                    
+                    <label for="importFile" class="control-btn">Importar de .txt</label>
+                    <input type="file" id="importFile" accept=".txt" style="display: none;">
+                </div>
+                
+                <div id="historyGrid" class="history-grid">
+                    <p>Cargando historial...</p>
+                </div>
+            </div>
+        </div>
+        
         <main class="pokedex">
             <div class="pokedex-screen">
                 <div class="screen-container">
@@ -131,7 +152,6 @@
     </div>
     
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
     <script src="js/script.js" type="text/javascript"></script>
 </body>
 </html>
