@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
     <style>
-            * {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -809,37 +809,34 @@
             }
 
             async openQRScanner() {
-    const modal = document.getElementById('qrModal');
-    modal.style.display = 'block';
-    
-    try {
-        // Usar la API nativa de cámara
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment" } 
-        });
-        
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        video.setAttribute("playsinline", true);
-        video.style.width = "100%";
-        video.style.borderRadius = "10px";
-        
-        const scannerContainer = document.getElementById('qrReader');
-        scannerContainer.innerHTML = '';
-        scannerContainer.appendChild(video);
-        
-        await video.play();
-        
-        // Mensaje instructivo
-        const instructions = document.createElement('div');
-        instructions.innerHTML = '<p style="color: white; text-align: center; font-family: Press Start 2P; font-size: 8px;">📷 Cámara activada - Usa app externa para QR</p>';
-        scannerContainer.appendChild(instructions);
-        
-    } catch (error) {
-        console.error("Error cámara:", error);
-        this.showCameraError();
-    }
-}
+                const modal = document.getElementById('qrModal');
+                const cameraError = document.getElementById('cameraError');
+                
+                modal.style.display = 'block';
+                cameraError.style.display = 'none';
+                
+                // Verificar si la librería está cargada
+                if (typeof Html5Qrcode === 'undefined') {
+                    console.error('❌ Librería QR no cargada');
+                    this.showCameraError();
+                    return;
+                }
+                
+                // Limpiar escáner anterior si existe
+                if (this.qrScanner) {
+                    await this.closeQRScanner();
+                }
+                
+                try {
+                    this.isScanning = true;
+                    
+                    this.qrScanner = new Html5Qrcode("qrReader");
+                    
+                    const config = {
+                        fps: 10,
+                        qrbox: { width: 200, height: 200 }
+                    };
+
                     console.log("📷 Intentando iniciar cámara:", this.currentCamera);
                     
                     await this.qrScanner.start(
@@ -954,38 +951,35 @@
                 }
             }
 
-displayPokemon(pokemon) {
-    document.getElementById('pokemonName').textContent = this.capitalizeFirst(pokemon.name);
-    document.getElementById('pokemonId').textContent = #${pokemon.id.toString().padStart(3, '0')};
-    
-    const sprite = document.getElementById('pokemonSprite');
-    
-    // VERSIÓN CORREGIDA - Sin operador ?.
-    let pixelSprite = pokemon.sprites.front_default;
-    
-    // Verificación segura de sprites pixelados
-    if (pokemon.sprites.versions) {
-        const gen5 = pokemon.sprites.versions['generation-v'];
-        if (gen5) {
-            const blackWhite = gen5['black-white'];
-            if (blackWhite && blackWhite.animated && blackWhite.animated.front_default) {
-                pixelSprite = blackWhite.animated.front_default;
+            displayPokemon(pokemon) {
+                document.getElementById('pokemonName').textContent = this.capitalizeFirst(pokemon.name);
+                document.getElementById('pokemonId').textContent = `#${pokemon.id.toString().padStart(3, '0')}`;
+                
+                const sprite = document.getElementById('pokemonSprite');
+                
+                // VERSIÓN CORREGIDA - Sin operador ?.
+                let pixelSprite = pokemon.sprites.front_default;
+                
+                // Verificación segura de sprites pixelados
+                if (pokemon.sprites.versions && 
+                    pokemon.sprites.versions['generation-v'] && 
+                    pokemon.sprites.versions['generation-v']['black-white'] && 
+                    pokemon.sprites.versions['generation-v']['black-white'].animated) {
+                    pixelSprite = pokemon.sprites.versions['generation-v']['black-white'].animated.front_default || pokemon.sprites.front_default;
+                }
+                
+                sprite.src = pixelSprite;
+                sprite.style.display = 'block';
+                
+                this.displayTypes(pokemon.types);
+                document.getElementById('pokemonHeight').textContent = `${(pokemon.height / 10).toFixed(1)} m`;
+                document.getElementById('pokemonWeight').textContent = `${(pokemon.weight / 10).toFixed(1)} kg`;
+                
+                this.displayAbilities(pokemon.abilities);
+                this.displayStats(pokemon.stats);
+                
+                this.hideLoading();
             }
-        }
-    }
-    
-    sprite.src = pixelSprite;
-    sprite.style.display = 'block';
-    
-    this.displayTypes(pokemon.types);
-    document.getElementById('pokemonHeight').textContent = ${(pokemon.height / 10).toFixed(1)} m;
-    document.getElementById('pokemonWeight').textContent = ${(pokemon.weight / 10).toFixed(1)} kg;
-    
-    this.displayAbilities(pokemon.abilities);
-    this.displayStats(pokemon.stats);
-    
-    this.hideLoading();
-}
 
             displayTypes(types) {
                 const typesContainer = document.getElementById('pokemonTypes');
