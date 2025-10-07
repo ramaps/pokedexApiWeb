@@ -31,6 +31,7 @@ class Pokedex {
                     }
                 });
 
+                // Control de botón "Atrás" sin conflicto
                 window.addEventListener('popstate', (e) => {
                     if (this.isScanning) {
                         this.closeQRScanner(false); 
@@ -75,20 +76,20 @@ class Pokedex {
                 }
                 
                 if (this.qrScanner) {
+                    // Esperamos el cierre completo y el delay de 1 segundo
                     await this.closeQRScanner(false); 
                 }
 
                 // *** PASO CRÍTICO: RECREAR el elemento #qrReader ***
                 let qrReader = document.getElementById('qrReader');
                 if (!qrReader) {
-                    const qrContainer = document.getElementById('qrContainer');
+                    const qrContainer = document.querySelector('.scanner-container'); 
                     if (qrContainer) {
                         qrReader = document.createElement('div');
                         qrReader.id = 'qrReader';
-                        qrContainer.appendChild(qrReader);
-                        console.log("✨ Elemento #qrReader recreado.");
+                        qrContainer.prepend(qrReader); 
                     } else {
-                        console.error("FALTA #qrContainer en index.html. La reapertura fallará.");
+                        console.error("FALTA .scanner-container en index.html o estructura incorrecta.");
                         this.showCameraError();
                         return;
                     }
@@ -171,9 +172,10 @@ class Pokedex {
                     // A. Detenemos el stream de video
                     if (this.qrScanner.isScanning()) {
                         try {
-                            await this.qrScanner.stop();
+                            // Parar es el paso más importante
+                            await this.qrScanner.stop(); 
                         } catch (error) {
-                            console.error("Error al detener el stream de video:", error);
+                            console.error("Error al detener el stream de video, probablemente bloqueado por el navegador:", error);
                         }
                     }
                     
@@ -184,13 +186,12 @@ class Pokedex {
                         console.error("Error al limpiar el escáner (clear):", clearError);
                     }
                     
-                    this.qrScanner = null; // Liberamos la instancia
+                    this.qrScanner = null; 
                     
                     // *** PASO CRÍTICO: DESTRUCCIÓN TOTAL DEL ELEMENTO QR ***
                     const qrReaderElement = document.getElementById('qrReader');
                     if (qrReaderElement) {
                         qrReaderElement.remove(); // Elimina el elemento del DOM
-                        console.log("🔥 Elemento #qrReader destruido.");
                     }
                 }
 
@@ -199,8 +200,8 @@ class Pokedex {
                     history.back(); 
                 }
                 
-                // 4. DELAY FORZADO para asegurar la liberación del recurso
-                await new Promise(resolve => setTimeout(resolve, 300));
+                // 4. *** CORRECCIÓN FINAL: DELAY EXTENDIDO *** para liberar el recurso de hardware
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Espera 1 segundo
             }
             
             showCameraError() {
