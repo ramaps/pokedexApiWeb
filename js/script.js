@@ -22,17 +22,16 @@ class Pokedex {
             if (element) {
                 element.addEventListener(event, handler);
             } else {
-                // ANTERIOR y SIGUIENTE ya no existen, evitamos el warning específico para ellos si no hay problema.
-                if (id !== 'prevBtn' && id !== 'nextBtn') {
+                // Advertencia solo si el elemento *debería* existir (ej. Historial, QR)
+                if (['historyBtn', 'qrBtn', 'closeHistoryModal', 'exportHistoryBtn', 'importFile', 'closeModal', 'retryCamera', 'frontCamera', 'rearCamera'].includes(id)) {
                     console.warn(`Elemento con ID '${id}' no encontrado. La función asociada estará deshabilitada.`);
                 }
             }
         };
 
-        // 1. Pokédex Core
-        safeAddListener('searchBtn', 'click', () => this.searchPokemon());
-        // *** SE ELIMINARON prevBtn y nextBtn ***
-        safeAddListener('randomBtn', 'click', () => this.loadRandomPokemon());
+        // 1. Pokédex Core: Ahora solo se activa con la tecla ENTER
+        // safeAddListener('searchBtn', 'click', () => this.searchPokemon()); <-- ELIMINADO
+        // safeAddListener('randomBtn', 'click', () => this.loadRandomPokemon()); <-- ELIMINADO
         
         safeAddListener('pokemonInput', 'keypress', (e) => {
             if (e.key === 'Enter') this.searchPokemon();
@@ -80,8 +79,6 @@ class Pokedex {
                 this.closeQRScanner(false); 
             }
         });
-        
-        // La llamada a updateNavigationButtons() fue eliminada
     }
     
     // --- Funciones de Historial (Persistencia, Visualización y Backup) ---
@@ -445,7 +442,10 @@ class Pokedex {
 
     async searchPokemon() {
         const input = document.getElementById('pokemonInput').value.trim();
-        if (!input) return;
+        if (!input) {
+             this.showError('Ingresa un número o nombre para buscar.');
+             return;
+        }
 
         this.showLoading();
 
@@ -519,7 +519,6 @@ class Pokedex {
         this.displayAbilities(pokemon.abilities);
         this.displayStats(pokemon.stats);
         
-        // Eliminada la llamada a updateNavigationButtons()
         this.hideLoading();
     }
 
@@ -570,15 +569,7 @@ class Pokedex {
         });
     }
 
-    // previousPokemon() fue ELIMINADA.
-
-    // nextPokemon() fue ELIMINADA.
-
-    loadRandomPokemon() {
-        const randomId = Math.floor(Math.random() * this.maxPokemonId) + 1;
-        this.currentPokemonId = randomId;
-        this.loadPokemon(randomId);
-    }
+    // loadRandomPokemon() fue ELIMINADA.
 
     showLoading() {
         const loading = document.getElementById('loading');
