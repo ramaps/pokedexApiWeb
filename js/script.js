@@ -1,6 +1,6 @@
 class Pokedex {
     constructor() {
-        this.currentPokemonId = 1;
+        this.currentPokemonId = 0;
         this.maxPokemonId = 1025; // Número máximo de Pokémon (hasta la generación 9)
         this.qrScanner = null;
         this.isScanning = false;
@@ -22,14 +22,16 @@ class Pokedex {
             if (element) {
                 element.addEventListener(event, handler);
             } else {
-                console.warn(`Elemento con ID '${id}' no encontrado. La función asociada estará deshabilitada.`);
+                // ANTERIOR y SIGUIENTE ya no existen, evitamos el warning específico para ellos si no hay problema.
+                if (id !== 'prevBtn' && id !== 'nextBtn') {
+                    console.warn(`Elemento con ID '${id}' no encontrado. La función asociada estará deshabilitada.`);
+                }
             }
         };
 
-        // 1. Pokédex Core y Navegación
+        // 1. Pokédex Core
         safeAddListener('searchBtn', 'click', () => this.searchPokemon());
-        safeAddListener('prevBtn', 'click', () => this.previousPokemon());
-        safeAddListener('nextBtn', 'click', () => this.nextPokemon());
+        // *** SE ELIMINARON prevBtn y nextBtn ***
         safeAddListener('randomBtn', 'click', () => this.loadRandomPokemon());
         
         safeAddListener('pokemonInput', 'keypress', (e) => {
@@ -79,7 +81,7 @@ class Pokedex {
             }
         });
         
-        this.updateNavigationButtons();
+        // La llamada a updateNavigationButtons() fue eliminada
     }
     
     // --- Funciones de Historial (Persistencia, Visualización y Backup) ---
@@ -237,12 +239,7 @@ class Pokedex {
     
     // --- Funciones de la Pokédex Core y QR ---
     
-    updateNavigationButtons() {
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        if (prevBtn) prevBtn.disabled = this.currentPokemonId <= 1;
-        if (nextBtn) nextBtn.disabled = this.currentPokemonId >= this.maxPokemonId;
-    }
+    // updateNavigationButtons() fue ELIMINADA.
     
     updateCameraButtons() {
         const frontBtn = document.getElementById('frontCamera');
@@ -522,7 +519,7 @@ class Pokedex {
         this.displayAbilities(pokemon.abilities);
         this.displayStats(pokemon.stats);
         
-        this.updateNavigationButtons(); 
+        // Eliminada la llamada a updateNavigationButtons()
         this.hideLoading();
     }
 
@@ -573,19 +570,9 @@ class Pokedex {
         });
     }
 
-    previousPokemon() {
-        if (this.currentPokemonId > 1) {
-            this.currentPokemonId--;
-            this.loadPokemon(this.currentPokemonId);
-        }
-    }
+    // previousPokemon() fue ELIMINADA.
 
-    nextPokemon() {
-        if (this.currentPokemonId < this.maxPokemonId) {
-            this.currentPokemonId++;
-            this.loadPokemon(this.currentPokemonId);
-        }
-    }
+    // nextPokemon() fue ELIMINADA.
 
     loadRandomPokemon() {
         const randomId = Math.floor(Math.random() * this.maxPokemonId) + 1;
