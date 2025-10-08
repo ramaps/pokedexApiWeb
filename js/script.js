@@ -11,6 +11,7 @@ class Pokedex {
         this.scannedHistory = this.loadHistory(); // Carga el historial
         
         this.initializeEventListeners();
+        // Carga el Pokémon #0 que es el estado inicial
         this.loadPokemon(this.currentPokemonId);
     }
 
@@ -30,9 +31,6 @@ class Pokedex {
         };
 
         // 1. Pokédex Core: Ahora solo se activa con la tecla ENTER
-        // safeAddListener('searchBtn', 'click', () => this.searchPokemon()); <-- ELIMINADO
-        // safeAddListener('randomBtn', 'click', () => this.loadRandomPokemon()); <-- ELIMINADO
-        
         safeAddListener('pokemonInput', 'keypress', (e) => {
             if (e.key === 'Enter') this.searchPokemon();
         });
@@ -76,6 +74,7 @@ class Pokedex {
         window.addEventListener('popstate', () => {
             const currentModal = window.history.state ? window.history.state.modal : null;
             if (this.isScanning && currentModal !== 'qrScanner') {
+                // Forzar el cierre de la cámara si el usuario usa el botón de retroceso
                 this.closeQRScanner(false); 
             }
         });
@@ -162,8 +161,8 @@ class Pokedex {
                     document.getElementById('historyModal').style.display = 'none';
                 });
             } else {
-                 // Para los no escaneados, solo mostramos el número
-                 div.textContent = `#${number}`; 
+                    // Para los no escaneados, solo mostramos el número
+                    div.textContent = `#${number}`; 
             }
             
             grid.appendChild(div);
@@ -174,8 +173,18 @@ class Pokedex {
     exportHistoryToTxt() {
         const historyIds = Object.keys(this.scannedHistory).join(',');
         
+        // Reemplazando alert()
+        const modalMessage = document.getElementById('errorMessage');
+        const showTempMessage = (msg) => {
+            if (modalMessage) {
+                modalMessage.textContent = msg;
+                modalMessage.style.display = 'block';
+                setTimeout(() => modalMessage.style.display = 'none', 3000);
+            }
+        };
+
         if (!historyIds) {
-            alert('No hay Pokémon escaneados para exportar.');
+            showTempMessage('No hay Pokémon escaneados para exportar.');
             return;
         }
         
@@ -190,13 +199,23 @@ class Pokedex {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        alert('Historial exportado con éxito. ¡Busca el archivo en tu carpeta de descargas!');
+        showTempMessage('Historial exportado con éxito. ¡Busca el archivo en tu carpeta de descargas!');
     }
 
     /** Importa un archivo de texto (.txt) con IDs de Pokémon y los fusiona con el historial existente. */
     importHistoryFromTxt(file) {
+        // Reemplazando alert()
+        const modalMessage = document.getElementById('errorMessage');
+        const showTempMessage = (msg) => {
+            if (modalMessage) {
+                modalMessage.textContent = msg;
+                modalMessage.style.display = 'block';
+                setTimeout(() => modalMessage.style.display = 'none', 4000);
+            }
+        };
+
         if (!file) {
-            alert('Por favor, selecciona un archivo .txt de historial.');
+            showTempMessage('Por favor, selecciona un archivo .txt de historial.');
             return;
         }
 
@@ -207,11 +226,11 @@ class Pokedex {
                 const content = e.target.result;
                 // Espera una lista de números separados por comas
                 const ids = content.split(',')
-                                   .map(id => parseInt(id.trim()))
-                                   .filter(id => !isNaN(id) && id >= 1 && id <= this.maxPokemonId);
+                                       .map(id => parseInt(id.trim()))
+                                       .filter(id => !isNaN(id) && id >= 1 && id <= this.maxPokemonId);
                 
                 if (ids.length === 0) {
-                    alert('El archivo no contiene IDs de Pokémon válidos (1-1025).');
+                    showTempMessage('El archivo no contiene IDs de Pokémon válidos (1-1025).');
                     return;
                 }
 
@@ -223,11 +242,11 @@ class Pokedex {
                 this.saveHistory();
                 this.displayHistory();
                 
-                alert(`Historial importado y fusionado con éxito. ${ids.length} Pokémon encontrados.`);
+                showTempMessage(`Historial importado y fusionado con éxito. ${ids.length} Pokémon encontrados.`);
 
             } catch (error) {
                 console.error('Error al leer el archivo de historial:', error);
-                alert('Hubo un error al procesar el archivo. Asegúrate de que es un .txt válido.');
+                showTempMessage('Hubo un error al procesar el archivo. Asegúrate de que es un .txt válido.');
             }
         };
 
@@ -235,8 +254,6 @@ class Pokedex {
     }
     
     // --- Funciones de la Pokédex Core y QR ---
-    
-    // updateNavigationButtons() fue ELIMINADA.
     
     updateCameraButtons() {
         const frontBtn = document.getElementById('frontCamera');
@@ -288,15 +305,16 @@ class Pokedex {
         
         if (typeof Html5Qrcode === 'undefined') {
             console.error('❌ Librería QR no cargada');
-            this.showCameraError();
+            this.showCameraError('Librería QR no cargada.');
             return;
         }
         
-        // Detener escáner anterior si existe
+        // Detener escáner anterior si existe y limpiar el elemento DOM
         if (this.qrScanner) {
             await this.closeQRScanner(false); 
         }
 
+        // Crear dinámicamente el div donde se renderizará el escáner (CRUCIAL para reinicios limpios)
         let qrReader = document.getElementById('qrReader');
         if (!qrReader) {
             const qrContainer = document.querySelector('.scanner-container'); 
@@ -305,7 +323,7 @@ class Pokedex {
                 qrReader.id = 'qrReader';
                 qrContainer.prepend(qrReader); 
             } else {
-                this.showCameraError();
+                this.showCameraError('Contenedor del escáner no encontrado.');
                 return;
             }
         }
@@ -319,7 +337,8 @@ class Pokedex {
                 qrbox: { width: 200, height: 200 }
             };
 
-            await new Promise(resolve => setTimeout(resolve, 100)); // Pequeña pausa
+            // Pequeña pausa para asegurar que el DOM está listo
+            await new Promise(resolve => setTimeout(resolve, 100)); 
             
             await this.qrScanner.start(
                 { 
@@ -338,7 +357,7 @@ class Pokedex {
             console.error("❌ Error al iniciar cámara:", error);
             
             this.cameraLocked = true;
-            this.showCameraError();
+            this.showCameraError('Error al iniciar la cámara. Permite el acceso o recarga la página.');
             this.isScanning = false;
             
             // Intenta cambiar a la otra cámara automáticamente si falla
@@ -375,6 +394,8 @@ class Pokedex {
 
         if (idFound) {
             this.isScanning = false;
+            
+            // **IMPORTANTE:** Detener y limpiar el escáner INMEDIATAMENTE al tener éxito
             await this.closeQRScanner();
             
             this.addPokemonToHistory(pokemonId);
@@ -384,6 +405,7 @@ class Pokedex {
             this.currentPokemonId = pokemonId;
             this.loadPokemon(pokemonId);
         } else {
+            // Si no se encuentra un ID válido, detiene el escáner y muestra un error temporal
             await this.closeQRScanner();
             
             document.getElementById('pokemonInput').value = '';
@@ -392,6 +414,11 @@ class Pokedex {
         }
     }
     
+    /**
+     * Detiene el stream de video de la cámara y limpia la instancia del escáner.
+     * ESTA ES LA FUNCIÓN CRÍTICA CORREGIDA.
+     * @param {boolean} popHistory Indica si debe retroceder en el historial del navegador.
+     */
     async closeQRScanner(popHistory = true) {
         const modal = document.getElementById('qrModal');
         if (modal) modal.style.display = 'none';
@@ -400,22 +427,25 @@ class Pokedex {
         
         if (this.qrScanner) {
             try {
-                if (this.qrScanner.isScanning()) {
-                    await this.qrScanner.stop(); 
-                }
+                // 1. Detener el stream de video. Esto es lo que libera el recurso de la cámara.
+                await this.qrScanner.stop(); 
+                console.log("Stream de cámara detenido y recurso liberado.");
             } catch (error) {
-                console.error("Error al detener el stream de video:", error);
+                // Se ignora si ya estaba detenido o falló la liberación (común en ciertos estados)
+                console.warn("Advertencia al detener el stream:", error);
             }
             
             try {
+                // 2. Limpiar la instancia.
                 this.qrScanner.clear();
             } catch (clearError) {
-                console.warn("Error al limpiar el escáner:", clearError);
+                console.warn("Error al limpiar la instancia del escáner:", clearError);
             }
             
-            this.qrScanner = null; 
+            this.qrScanner = null; // Reinicia la referencia para una nueva instancia
         }
         
+        // 3. Eliminar el div del DOM para un reinicio limpio
         const qrReaderElement = document.getElementById('qrReader');
         if (qrReaderElement) {
             qrReaderElement.remove(); 
@@ -424,17 +454,18 @@ class Pokedex {
         if (popHistory && window.history.state && window.history.state.modal === 'qrScanner') {
             history.back(); 
         }
-        
-        await new Promise(resolve => setTimeout(resolve, 500)); 
     }
     
-    showCameraError() {
+    showCameraError(message = 'Error al iniciar la cámara. Presiona REINTENTAR.') {
         const cameraError = document.getElementById('cameraError');
         if (cameraError) {
             cameraError.style.display = 'block';
-            document.querySelector('.scanner-overlay').style.display = 'none';
-            // Re-adjuntar listener para el botón de reintento si fue sobrescrito
-            document.getElementById('retryCamera').addEventListener('click', () => this.openQRScanner());
+            cameraError.querySelector('h3').textContent = 'Error de Cámara';
+            cameraError.querySelector('p').textContent = message;
+            
+            // Asegura que el botón de reintento no esté oculto si el contenedor existe
+            const options = document.querySelector('.camera-options');
+            if (options) options.style.display = 'flex';
         }
     }
     
@@ -477,6 +508,14 @@ class Pokedex {
     async loadPokemon(id) {
         this.showLoading();
         this.hideError();
+        
+        // Si el ID es 0, solo resetea la pantalla (estado inicial)
+        if (id === 0) {
+            this.resetDisplay();
+            this.hideLoading();
+            return;
+        }
+
         this.currentPokemonId = id;
 
         try {
@@ -520,6 +559,35 @@ class Pokedex {
         this.displayStats(pokemon.stats);
         
         this.hideLoading();
+    }
+    
+    resetDisplay() {
+        document.getElementById('pokemonName').textContent = 'POKÉDEX LISTA';
+        document.getElementById('pokemonId').textContent = '#000';
+        // Resetear otros campos a su estado inicial
+        document.getElementById('pokemonHeight').textContent = '--- m';
+        document.getElementById('pokemonWeight').textContent = '--- kg';
+        document.getElementById('pokemonSprite').style.display = 'none';
+
+        // Resetear Tipos
+        const typesContainer = document.getElementById('pokemonTypes');
+        if (typesContainer) typesContainer.innerHTML = '';
+        
+        // Resetear Habilidades
+        const abilitiesContainer = document.getElementById('pokemonAbilities');
+        if (abilitiesContainer) abilitiesContainer.innerHTML = '';
+        
+        // Resetear Stats
+        const statsContainer = document.getElementById('pokemonStats');
+        if (statsContainer) {
+            const statItems = statsContainer.querySelectorAll('.stat-item');
+            const statNames = ['HP', 'ATAQUE', 'DEFENSA', 'AT.ESP', 'DEF.ESP', 'VELOCIDAD'];
+            statItems.forEach((item, index) => {
+                item.querySelector('.stat-value').textContent = '---';
+                item.querySelector('.stat-name').textContent = statNames[index] || '---';
+            });
+        }
+
     }
 
     displayTypes(types) {
@@ -568,8 +636,6 @@ class Pokedex {
             }
         });
     }
-
-    // loadRandomPokemon() fue ELIMINADA.
 
     showLoading() {
         const loading = document.getElementById('loading');
